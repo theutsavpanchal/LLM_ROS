@@ -13,6 +13,7 @@
 3) Start GPT parser node
 
 
+will be updated regularly...
 ```
 roscore
 rosrun rosgpt client_node.py
@@ -29,6 +30,9 @@ If the problem says: "package do not exists". Do the following
     Either you must run the above source command each time you open a new terminal window or add it to your .bashrc file as follows.
 
     echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+
+### Errors you might face
+ALSA and speech recognition related issues: refer [here](https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time) and also [here](https://github.com/Uberi/speech_recognition/issues/526)
 
 
 ### References 
