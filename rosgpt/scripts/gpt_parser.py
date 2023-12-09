@@ -43,7 +43,7 @@ def askGPT(text_command):
                     returns: {"action": "sequence", "params": [{"action": "rotate", "params": {"angular_velocity": 10,"angle": 80,"is_clockwise": false,"unit": degrees,}},{"action": "turn_lights","params": {"value": true}}]}
 
                     prompt: "Move the robot forward."
-                    returns: {"action": "move", "params": {"linear_speed": 1, "distance": 5, "is_forward": true, "unit": "meter"}}
+                    returns: {"action": "move", "params": {"linear_speed": 0.2, "distance": 1.0, "is_forward": true, "unit": "meter"}}
 
                     '''
     prompt = prompt+'\nprompt: '+ str(text_command)
