@@ -1,3 +1,4 @@
 .vscode/c_cpp_properties.json
 .vscode/settings.json
 CMakeLists.txt
+rosgpt/scripts/scratch.py
