@@ -42,6 +42,9 @@ def askGPT(text_command):
                     prompt: "Rotate 80 degrees at 10 degrees per second and then take a picture and then turn off the lights."
                     returns: {"action": "sequence", "params": [{"action": "rotate", "params": {"angular_velocity": 10,"angle": 80,"is_clockwise": false,"unit": degrees,}},{"action": "turn_lights","params": {"value": true}}]}
 
+                    prompt: "Move the robot forward."
+                    returns: {"action": "move", "params": {"linear_speed": 1, "distance": 5, "is_forward": true, "unit": "meter"}}
+
                     '''
     prompt = prompt+'\nprompt: '+ str(text_command)
 
@@ -57,9 +60,13 @@ def askGPT(text_command):
          rospy.logerr(f"Unexpected Error: {e}")
          return None
     chatgpt_response = response.choices[0].message.content.strip()
+    if chatgpt_response is None:
+        rospy.logerr("Error: Received no responce, try again!")
+        return 0
     start_index = chatgpt_response.find('{')
     end_index = chatgpt_response.rfind('}') + 1
     json_response_dict = chatgpt_response[start_index:end_index]
+    voice_cmd_pub.publish(json_response_dict)
     return json.dumps({'text': chatgpt_response, 'json': json_response_dict})
 
 
@@ -73,6 +80,7 @@ def parse(input:String):
 if __name__ == '__main__':
     rospy.init_node("gpt_parser")
     sub = rospy.Subscriber("user_text", String, callback=parse)
+    voice_cmd_pub = rospy.Publisher('voice_cmd', String, queue_size=10)
     rospy.loginfo('node initiated')
     
     # block until rosnode is shutdown
