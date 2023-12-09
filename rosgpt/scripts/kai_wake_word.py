@@ -50,7 +50,7 @@ class PorcupineDemo(Thread):
                 query = r.recognize_google(audio, language='en-US')
                 return query
             except Exception as e:
-                print("Error occured: " + str(e))
+                print("[ERROR] Invalid text, try again " )
         time.sleep(2)
 
     def run(self, data):
@@ -112,8 +112,9 @@ class PorcupineDemo(Thread):
                         print('[%s] Detected %s' %
                             (str(datetime.now()), keywords[result]))
                         text = self.listen()
-                        user_text_pub.publish(text)
-                        rospy.loginfo(text)
+                        if text is not None:
+                            user_text_pub.publish(text)
+                            rospy.loginfo(text)
                         wake_str = "session_on"
                         rospy.loginfo(wake_str)
                         time.sleep(1)
