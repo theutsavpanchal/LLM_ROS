@@ -9,18 +9,23 @@
 ### How to run
 
 1) start roscore
-2) Start Client Node
-3) Start GPT parser node
-
-
-will be updated regularly...
 ```
 roscore
-rosrun rosgpt client_node.py
+```
+2) Run Kai wake word detection node. 
+Make sure to put the correct path of the .ppn file. In this case /home/your_username/Hello-Kai_en_linux_v2_1_0.ppn
+```
+rosrun rosgpt kai_wake_word.py --access_key 1h/tb+FdmR/svwEt1dIsKnJ/g9F68W3hZuhDnKdMNg/g+j9VtXvAVw== --keyword_path /home/utsav/Hello-Kai_en_linux_v2_1_0.ppn
+```
+3) Run GPT parser node
+```
 rosrun rosgpt gpt_parser.py
 ```
+4) Run Command parser node
+```
+rosrun rosgpt cmd_parser.py
+```
 
-More ideas will be implemented...
 
 If the problem says: "package do not exists". Do the following
 
@@ -39,3 +44,4 @@ ALSA and speech recognition related issues: refer [here](https://stackoverflow.c
 
 https://wiki.ros.org/catkin/Tutorials/create_a_workspace  
 https://github.com/aniskoubaa/rosgpt/tree/main
+https://www.emqx.com/en/blog/how-to-use-mqtt-in-python
