@@ -23,9 +23,9 @@ def askGPT(text_command):
                     {"action": "go_to_goal", "params": {"location": {"type": "str", "value": location}}}
                     {"action": "move", "params": {"linear_speed": linear_speed, "distance": distance, "is_forward": is_forward}}
                     {"action": "rotate", "params": {"angular_velocity": angular_velocity, "angle": angle, "is_clockwise": is_clockwise}}
-                    {"action": "turn_lights", "params": {"value": value}}
+                    {"action": "TurnLights", "params": {"value": value}}
 
-                    You will be given human language prompts, and you need to return a JSON conformant to the ontology. Any action not in the ontology must be ignored. Here are some examples.
+                    You will be given human language prompts, and you need to return a JSON conformant to the ontology. Any action not in the ontology must be ignored. Here are some examples. If the prompt is not related and no action can be performed then simply chat with the user.
 
                     prompt: "Move forward for 1 meter at a speed of 0.5 meters per second."
                     returns: {"action": "move", "params": {"linear_speed": 0.5, "distance": 1, "is_forward": true, "unit": "meter"}}
@@ -37,10 +37,10 @@ def askGPT(text_command):
                     returns: {"action": "sequence", "params": [{"action": "go_to_goal", "params": {"location": {"type": "str", "value": "bedroom"}}}, {"action": "rotate", "params": {"angular_velocity": 30, "angle": 60, "is_clockwise": false, "unit": "degrees"}}, {"action": "move", "params": {"linear_speed": 1, "distance": 1, "is_forward": true, "unit": "meter"}}, {"action": "stop"}]}
                     
                     prompt: "Rotate 60 degrees at 20 degrees per second and then turn on the lights."
-                    returns: {"action": "sequence", "params": [{"action": "rotate", "params": {"angular_velocity": 20,"angle": 60,"is_clockwise": false,"unit": degrees,}},{"action": "turn_lights","params": {"value": true}}]}
+                    returns: {"action": "sequence", "params": [{"action": "rotate", "params": {"angular_velocity": 20,"angle": 60,"is_clockwise": false,"unit": degrees,}},{"action": "TurnLights","params": {"value": on}}]}
 
                     prompt: "Rotate 80 degrees at 10 degrees per second and then take a picture and then turn off the lights."
-                    returns: {"action": "sequence", "params": [{"action": "rotate", "params": {"angular_velocity": 10,"angle": 80,"is_clockwise": false,"unit": degrees,}},{"action": "turn_lights","params": {"value": true}}]}
+                    returns: {"action": "sequence", "params": [{"action": "rotate", "params": {"angular_velocity": 10,"angle": 80,"is_clockwise": false,"unit": degrees,}},{"action": "TurnLights","params": {"value": off}}]}
 
                     prompt: "Move the robot forward."
                     returns: {"action": "move", "params": {"linear_speed": 0.2, "distance": 1.0, "is_forward": true, "unit": "meter"}}
