@@ -13,6 +13,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 import copy
 import math
+from text_to_speech_tests import eleven_labs_tts
+from control_light import send_mqtt_command
 
 
 
@@ -55,6 +57,19 @@ class cmd_parse():
                         self.thread_executor.submit(self.turtlesim_move, action)
                     elif action['action'] == 'rotate':
                         self.thread_executor.submit(self.turtlesim_rotate, action)
+
+            elif cmd["action"] == "email":
+                # write email script
+                pass
+            elif cmd["action"]=="TurnLights":
+                info = cmd["action"]
+                onoff = cmd["params"]["value"]
+                topic = "home/light/command" # topic will be changed to light topic in the lab
+                try:
+                    send_mqtt_command(topic, info+onoff, info)
+                    eleven_labs_tts(f"Turned {onoff} the lights successfully")
+                except:
+                    rospy.logerr("[ERROR] Error occured in sending MQTT command, Please try again")
                 
         except json.JSONDecodeError:
             rospy.logerr(f"[json.JSONDecodeError] Invalid of empty JSON string received {msg.data}")
@@ -96,6 +111,7 @@ class cmd_parse():
         self.velocity_pub.publish(twise_msg)
         rospy.loginfo(f"distance moved: {self.get_distance(start_pose, self.pose)}")
         rospy.loginfo("Robot Stopped..")
+        eleven_labs_tts(f"Moved the Robot {distance} meter {direction} successfully ")
 
 
     def turtlesim_rotate(self, cmd):
@@ -124,10 +140,8 @@ class cmd_parse():
         
         twist_msg.angular.z = 0.0
         self.velocity_pub.publish(twist_msg)
-        print('The Robot has stopped...')
-
-    def control_led(self):
-        pass # TODO
+        rospy.loginfo('The Robot has stopped...')
+        eleven_labs_tts(f"Rotated the Robot {desired_relative_angle_degree} degrees ")
 
 
 def main():
