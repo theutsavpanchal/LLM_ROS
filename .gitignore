@@ -2,3 +2,4 @@
 .vscode/settings.json
 CMakeLists.txt
 rosgpt/scripts/scratch.py
+*.pyc
