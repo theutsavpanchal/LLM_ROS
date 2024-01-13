@@ -24,6 +24,7 @@ def askGPT(text_command):
                     {"action": "move", "params": {"linear_speed": linear_speed, "distance": distance, "is_forward": is_forward}}
                     {"action": "rotate", "params": {"angular_velocity": angular_velocity, "angle": angle, "is_clockwise": is_clockwise}}
                     {"action": "TurnLights", "params": {"value": value}}
+                    {"action": "Email"}
 
                     You will be given human language prompts, and you need to return a JSON conformant to the ontology. Any action not in the ontology must be ignored. Here are some examples. If the prompt is not related and no action can be performed then simply chat with the user.
 
@@ -44,6 +45,9 @@ def askGPT(text_command):
 
                     prompt: "Move the robot forward."
                     returns: {"action": "move", "params": {"linear_speed": 0.2, "distance": 1.0, "is_forward": true, "unit": "meter"}}
+
+                    prompt: "Can you send an email?"
+                    returns {"action": "Email"}
 
                     '''
     prompt = prompt+'\nprompt: '+ str(text_command)
