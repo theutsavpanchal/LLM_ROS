@@ -15,6 +15,7 @@ import copy
 import math
 from text_to_speech_tests import eleven_labs_tts
 from control_light import send_mqtt_command
+from mailer import run_email_script
 
 
 
@@ -57,10 +58,8 @@ class cmd_parse():
                         self.thread_executor.submit(self.turtlesim_move, action)
                     elif action['action'] == 'rotate':
                         self.thread_executor.submit(self.turtlesim_rotate, action)
-
-            elif cmd["action"] == "email":
-                # write email script
-                pass
+            elif cmd["action"] == "Email":
+                run_email_script()
             elif cmd["action"]=="TurnLights":
                 info = cmd["action"]
                 onoff = cmd["params"]["value"]
