@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-INFO: This node parses the command from "voice_cmd" node and perform the operation on different topics
-"""
-
 import rospy
 from std_msgs.msg import String
 import json
@@ -13,9 +9,10 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 import copy
 import math
-from text_to_speech_tests import eleven_labs_tts
+from text_to_speech_tests import eleven_labs_tts, pyttxx3_test
 from control_light import send_mqtt_command
 from mailer import run_email_script
+from nav_msgs.msg import Odometry
 
 
 
@@ -23,19 +20,34 @@ class cmd_parse():
     def __init__(self):
         # make subscription to voice_cmd
         self.cmd_sub = rospy.Subscriber("voice_cmd", String, callback=self.get_args_and_parse)
-        self.velocity_pub = rospy.Publisher("/turtle1/cmd_vel", Twist, queue_size=10) 
-        self.pose_sub = rospy.Subscriber("/turtle1/pose", Pose,self.pose_callback )
+        #self.velocity_pub = rospy.Publisher("/turtle1/cmd_vel", Twist, queue_size=10)
+        self.velocity_pub = rospy.Publisher("/tb_cmd_vel", Twist, queue_size=10) 
+        self.pose_sub = rospy.Subscriber("/tb_control/wheel_odom", Odometry, self.pose_callback)
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
-        self.pose = Pose()
+        self.ctrl_c = False
+        self.pose = Odometry()
         self.thread_executor = ThreadPoolExecutor(max_workers=1)
+        rospy.on_shutdown(self.shutdownhook)
+
+    def shutdownhook(self):
+        self.stop_robot()
+        self.ctrl_c = True
+        return 1
+
+    def stop_robot(self):
+        rospy.loginfo("shutdown time! Stop the robot")
+        twise_msg = Twist()
+        twise_msg.linear.x = 0.0
+        twise_msg.angular.z = 0.0
+        self.velocity_pub.publish(twise_msg)
 
 
     def pose_callback(self, msg):
-        self.x = msg.x
-        self.y = msg.y
-        self.theta = msg.theta
+        self.x = msg.pose.pose.position.x
+        self.y = msg.pose.pose.position.y
+        self.theta = msg.pose.pose.position.z
         self.pose = msg
 
     def get_args_and_parse(self, msg):
@@ -60,6 +72,13 @@ class cmd_parse():
                         self.thread_executor.submit(self.turtlesim_rotate, action)
             elif cmd["action"] == "Email":
                 run_email_script()
+
+            elif cmd["action"] == "stop":
+                self.shutdownhook()
+
+            elif cmd["action"] == "simple_chat":
+                text = cmd["params"]
+                eleven_labs_tts(text)
             elif cmd["action"]=="TurnLights":
                 info = cmd["action"]
                 onoff = cmd["params"]["value"]
@@ -76,11 +95,12 @@ class cmd_parse():
             rospy.logerr(f"[Exception] An unexpected error occured: {str(e)}")
     
     def get_distance(self, start, destination):
-        return math.sqrt(((destination.x-start.x)**2 + (destination.y-start.y)**2))
+        return math.sqrt(((destination.pose.pose.position.x-start.pose.pose.position.x)**2 + \
+                          (destination.pose.pose.position.y-start.pose.pose.position.y)**2))
     
 
     def turtlesim_move(self, cmd):
-        linear_speed = cmd['params'].get('linear_speed', 0.2)
+        linear_speed = cmd['params'].get('linear_speed', 0.1)
         distance = cmd['params'].get('distance', 1.0)
         is_forward = cmd['params'].get('is_forward', True)
         if is_forward:
@@ -102,7 +122,7 @@ class cmd_parse():
         rospy.loginfo(f'Start pose {start_pose}')
         
 
-        while self.get_distance(start_pose, self.pose) < distance:
+        while self.get_distance(start_pose, self.pose) < distance and not self.ctrl_c:
             rospy.loginfo(f"distance moved: {self.get_distance(start_pose, self.pose)}")
             self.velocity_pub.publish(twise_msg)
 
@@ -110,12 +130,14 @@ class cmd_parse():
         self.velocity_pub.publish(twise_msg)
         rospy.loginfo(f"distance moved: {self.get_distance(start_pose, self.pose)}")
         rospy.loginfo("Robot Stopped..")
-        eleven_labs_tts(f"Moved the Robot {distance} meter {direction} successfully ")
+        self.thread_executor.submit(eleven_labs_tts, f"Moved the Robot {distance} meter {direction} successfully ")
+        time.sleep(1)
+        #eleven_labs_tts(f"Moved the Robot {distance} meter {direction} successfully ")
 
 
     def turtlesim_rotate(self, cmd):
         angular_speed_degree = cmd['params'].get('angular_velocity', 1.0)
-        desired_relative_angle_degree = cmd['params'].get('angle', 90.0)
+        desired_relative_angle_degree = cmd['params'].get('angle', 90.0) # 60
         clockwise = cmd['params'].get('is_clockwise', True)
         rospy.loginfo("Start rotating the robot..")
         twist_msg = Twist()
@@ -131,23 +153,34 @@ class cmd_parse():
 
         start_pose = copy.copy(self.pose)
         rotated_related_angle_degree=0.0
-
-        while rotated_related_angle_degree<desired_relative_angle_degree:
+        print(f"Start pose twist: {start_pose.twist.twist.angular}")
+        print(f"target degree: {desired_relative_angle_degree}")
+        print(f"angular speed degrees: {angular_speed_degree} radians: {angular_speed_radians}")
+        angle_r = desired_relative_angle_degree * 3.14 / 180
+        t0 = rospy.Time.now().secs
+        while rotated_related_angle_degree<angle_r:
             self.velocity_pub.publish(twist_msg)
-            rotated_related_angle_degree = math.degrees(abs(start_pose.theta - self.pose.theta))
+            t1 = rospy.Time.now().secs
+            rotated_related_angle_degree = angular_speed_radians* (t1-t0)
+            #rotated_related_angle_degree = math.degrees(abs(start_pose.twist.twist.angular.z - self.pose.twist.twist.angular.z))
+            rospy.loginfo(f"[Angle remaining] {desired_relative_angle_degree - math.degrees(rotated_related_angle_degree):.2f}")
             time.sleep(0.01)
         
         twist_msg.angular.z = 0.0
         self.velocity_pub.publish(twist_msg)
         rospy.loginfo('The Robot has stopped...')
-        eleven_labs_tts(f"Rotated the Robot {desired_relative_angle_degree} degrees ")
-
+        self.thread_executor.submit(eleven_labs_tts, f"Rotated the Robot {desired_relative_angle_degree} degrees ")
+        #eleven_labs_tts(f"Rotated the Robot {desired_relative_angle_degree} degrees ")
+        time.sleep(1)
 
 def main():
     rospy.init_node("cmd_parser")
     rospy.loginfo("Started cmd_parse node..")
     node = cmd_parse()
-    rospy.spin()
+    try:
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
     
 
 if __name__ == "__main__":
