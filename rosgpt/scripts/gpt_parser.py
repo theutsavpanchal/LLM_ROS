@@ -92,8 +92,8 @@ def parse(input:String):
 
 if __name__ == '__main__':
     rospy.init_node("gpt_parser")
-    #sub = rospy.Subscriber("user_text", String, callback=parse)
-    sub = rospy.Subscriber("input_stream", String, callback=parse)
+    sub = rospy.Subscriber("user_text", String, callback=parse)  # use this for kai wake word node: access voice feature
+    #sub = rospy.Subscriber("input_stream", String, callback=parse) # use this for client_node: access typing feature
     voice_cmd_pub = rospy.Publisher('voice_cmd', String, queue_size=10)
     rospy.loginfo('node initiated')
     
