@@ -26,7 +26,7 @@ def askGPT(text_command):
                     {"action": "TurnLights", "params": {"value": value}}
                     {"action": "Email"}
 
-                    You will be given human language prompts, and you need to return a JSON conformant to the ontology. Any action not in the ontology must be ignored. Here are some examples. If the prompt is not related and no action can be performed then simply chat with the user.
+                    You will be given human language prompts, and you need to return a JSON conformant to the ontology. Any action not in the ontology must be ignored. Here are some examples. 
 
                     prompt: "Move forward for 1 meter at a speed of 0.5 meters per second."
                     returns: {"action": "move", "params": {"linear_speed": 0.5, "distance": 1, "is_forward": true, "unit": "meter"}}
@@ -47,7 +47,16 @@ def askGPT(text_command):
                     returns: {"action": "move", "params": {"linear_speed": 0.2, "distance": 1.0, "is_forward": true, "unit": "meter"}}
 
                     prompt: "Can you send an email?"
-                    returns {"action": "Email"}
+                    returns: {"action": "Email"}
+
+                    prompt: "Stop the robot"
+                    returns: {"action": "stop"}
+
+                    rompt: "Stop"
+                    returns: {"action": "stop"}
+
+                    prompt: "What is the capital of India?"
+                    returns: {"action": "simple_chat", params: "The capital of India is Delhi"}
 
                     '''
     prompt = prompt+'\nprompt: '+ str(text_command)
@@ -83,7 +92,8 @@ def parse(input:String):
 
 if __name__ == '__main__':
     rospy.init_node("gpt_parser")
-    sub = rospy.Subscriber("user_text", String, callback=parse)
+    #sub = rospy.Subscriber("user_text", String, callback=parse)
+    sub = rospy.Subscriber("input_stream", String, callback=parse)
     voice_cmd_pub = rospy.Publisher('voice_cmd', String, queue_size=10)
     rospy.loginfo('node initiated')
     
