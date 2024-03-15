@@ -1,0 +1,4 @@
+<launch> 
+<node name = "gpt_parser_node" pkg="rosgpt" type="gpt_parser.py" respawn="true" output="screen" />
+<node name = "cmd_parser_node" pkg="rosgpt" type="cmd_parser.py" respawn="true" output="screen" />
+</launch>
