@@ -20,7 +20,6 @@ print(openai_api_key)
 def askGPT(text_command):
     # Create the GPT-3 prompt with example inputs and desired outputs
     prompt = '''Consider the following ontology:
-                    {"action": "go_to_goal", "params": {"location": {"type": "str", "value": location}}}
                     {"action": "move", "params": {"linear_speed": linear_speed, "distance": distance, "is_forward": is_forward}}
                     {"action": "rotate", "params": {"angular_velocity": angular_velocity, "angle": angle, "is_clockwise": is_clockwise}}
                     {"action": "TurnLights", "params": {"value": value}}
@@ -33,9 +32,6 @@ def askGPT(text_command):
 
                     prompt: "Rotate 60 degree in clockwise direction at 10 degrees per second and make pizza."
                     returns: {"action": "rotate", "params": {"angular_velocity": 10, "angle": 60, "is_clockwise": true, "unit": "degrees"}}
-                    
-                    prompt: "go to the bedroom, rotate 60 degrees and move 1 meter then stop"
-                    returns: {"action": "sequence", "params": [{"action": "go_to_goal", "params": {"location": {"type": "str", "value": "bedroom"}}}, {"action": "rotate", "params": {"angular_velocity": 30, "angle": 60, "is_clockwise": false, "unit": "degrees"}}, {"action": "move", "params": {"linear_speed": 1, "distance": 1, "is_forward": true, "unit": "meter"}}, {"action": "stop"}]}
                     
                     prompt: "Rotate 60 degrees at 20 degrees per second and then turn on the lights."
                     returns: {"action": "sequence", "params": [{"action": "rotate", "params": {"angular_velocity": 20,"angle": 60,"is_clockwise": false,"unit": degrees,}},{"action": "TurnLights","params": {"value": on}}]}
@@ -92,8 +88,8 @@ def parse(input:String):
 
 if __name__ == '__main__':
     rospy.init_node("gpt_parser")
-    sub = rospy.Subscriber("user_text", String, callback=parse)  # use this for kai wake word node: access voice feature
-    #sub = rospy.Subscriber("input_stream", String, callback=parse) # use this for client_node: access typing feature
+    #sub = rospy.Subscriber("user_text", String, callback=parse)  # use this for kai wake word node: access voice feature
+    sub = rospy.Subscriber("input_stream", String, callback=parse) # use this for client_node: access typing feature
     voice_cmd_pub = rospy.Publisher('voice_cmd', String, queue_size=10)
     rospy.loginfo('node initiated')
     
